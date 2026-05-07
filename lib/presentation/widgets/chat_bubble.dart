@@ -4,7 +4,11 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/atom-one-dark.dart';
+import 'package:flutter_highlighter/themes/atom-one-light.dart';
 import '../providers/study_provider.dart';
+import 'package:markdown/markdown.dart' as md;
 
 class ChatBubble extends ConsumerWidget {
   final String id;
@@ -147,6 +151,9 @@ class ChatBubble extends ConsumerWidget {
                     MarkdownBody(
                       data: response,
                       selectable: true,
+                      builders: {
+                        'code': CodeElementBuilder(isDark: isDark),
+                      },
                       styleSheet: MarkdownStyleSheet(
                         p: TextStyle(
                           color: colorScheme.onSurface,
@@ -277,6 +284,46 @@ class _ActionButton extends StatelessWidget {
       visualDensity: VisualDensity.compact,
       color: colorScheme.primary.withAlpha(180),
       onPressed: onTap,
+    );
+  }
+}
+
+class CodeElementBuilder extends MarkdownElementBuilder {
+  final bool isDark;
+
+  CodeElementBuilder({required this.isDark});
+
+  @override
+  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+    var language = '';
+
+    if (element.attributes['class'] != null) {
+      String lg = element.attributes['class'] as String;
+      language = lg.substring(9);
+    }
+
+    final String textContent = element.textContent;
+
+    if (language.isEmpty && !textContent.contains('\n')) {
+      return null; // Inline code will use default style
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: HighlightView(
+          textContent.trim(),
+          language: language,
+          theme: isDark ? atomOneDarkTheme : atomOneLightTheme,
+          padding: const EdgeInsets.all(12),
+          textStyle: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 13,
+          ),
+        ),
+      ),
     );
   }
 }
