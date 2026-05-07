@@ -1,5 +1,4 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -30,9 +29,11 @@ void main() async {
       ),
     );
     
+    /* 
     if (FirebaseAuth.instance.currentUser == null) {
       await FirebaseAuth.instance.signInAnonymously();
     }
+    */
   } catch (e) {
     debugPrint('Firebase initialization skipped or failed: $e');
     // سنستمر في العمل باستخدام Hive فقط إذا فشل Firebase

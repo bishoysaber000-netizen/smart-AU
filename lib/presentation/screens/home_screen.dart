@@ -171,16 +171,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Center(
       child: Column(
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withAlpha(20),
-              shape: BoxShape.circle,
-              image: const DecorationImage(
-                image: AssetImage('assets/images/logo.png'),
-                fit: BoxFit.cover,
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(40),
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
             ),
           ),
           const SizedBox(height: 16),
