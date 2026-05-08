@@ -40,13 +40,14 @@ class StudyState {
       sessions: sessions ?? this.sessions,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
-      currentStreamingResponse: currentStreamingResponse ?? this.currentStreamingResponse,
-      currentThreadId: currentThreadId != null ? currentThreadId() : this.currentThreadId,
+      currentStreamingResponse:
+          currentStreamingResponse ?? this.currentStreamingResponse,
+      currentThreadId:
+          currentThreadId != null ? currentThreadId() : this.currentThreadId,
       isTrashMode: isTrashMode ?? this.isTrashMode,
     );
   }
 }
-
 
 class StudyNotifier extends StateNotifier<StudyState> {
   final StudyRepository _repository;
@@ -79,8 +80,9 @@ class StudyNotifier extends StateNotifier<StudyState> {
     if (user == null) return;
 
     _sessionsSubscription?.cancel();
-    
-    _sessionsSubscription = _repository.getSessionsStream(user.uid).listen((cloudSessions) {
+
+    _sessionsSubscription =
+        _repository.getSessionsStream(user.uid).listen((cloudSessions) {
       final Map<String, StudySession> mergedMap = {};
 
       // 1. إضافة كل الرسائل الحالية من الـ State (المحلية)
@@ -90,7 +92,7 @@ class StudyNotifier extends StateNotifier<StudyState> {
 
       // 2. دمج رسائل السحاب: إذا كانت أحدث (updatedAt) أو غير موجودة محلياً، نعتمدها
       for (var cloudS in cloudSessions) {
-        if (!mergedMap.containsKey(cloudS.id) || 
+        if (!mergedMap.containsKey(cloudS.id) ||
             cloudS.updatedAt.isAfter(mergedMap[cloudS.id]!.updatedAt)) {
           mergedMap[cloudS.id] = cloudS;
         }
@@ -100,7 +102,7 @@ class StudyNotifier extends StateNotifier<StudyState> {
       finalSessions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
       state = state.copyWith(sessions: finalSessions);
-      
+
       // التنظيف التلقائي لسلة المحذوفات (30 يوم)
       _cleanupExpiredTrash();
     });
@@ -112,7 +114,7 @@ class StudyNotifier extends StateNotifier<StudyState> {
 
     // تجميع الـ threadIds التي يجب مسحها بالكامل
     final Set<String> threadsToDelete = {};
-    
+
     for (var s in state.sessions) {
       if (s.isDeleted && s.updatedAt.isBefore(thirtyDaysAgo)) {
         threadsToDelete.add(s.threadId ?? s.id);
@@ -143,10 +145,12 @@ class StudyNotifier extends StateNotifier<StudyState> {
     state = state.copyWith(isTrashMode: enabled);
   }
 
-  Future<void> askAI(String query, {String? threadId, Uint8List? fileBytes, String? mimeType}) async {
-    final activeThreadId = threadId ?? state.currentThreadId ?? const Uuid().v4();
+  Future<void> askAI(String query,
+      {String? threadId, Uint8List? fileBytes, String? mimeType}) async {
+    final activeThreadId =
+        threadId ?? state.currentThreadId ?? const Uuid().v4();
     final sessionId = const Uuid().v4();
-    
+
     // 1. أضف الرسالة فوراً للقائمة مع رد فارغ
     final newSession = StudySession(
       id: sessionId,
@@ -155,7 +159,7 @@ class StudyNotifier extends StateNotifier<StudyState> {
       timestamp: DateTime.now(),
       threadId: activeThreadId,
     );
-    
+
     state = state.copyWith(
       sessions: [newSession, ...state.sessions],
       isLoading: true,
@@ -165,18 +169,19 @@ class StudyNotifier extends StateNotifier<StudyState> {
 
     try {
       final history = state.sessions
-          .where((s) => s.threadId == activeThreadId && !s.isDeleted && s.id != sessionId)
+          .where((s) =>
+              s.threadId == activeThreadId && !s.isDeleted && s.id != sessionId)
           .toList()
         ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
       String fullResponse = '';
       final stream = _repository.getAIResponseStream(
-        query, 
+        query,
         history: history,
         fileBytes: fileBytes,
         mimeType: mimeType,
       );
-      
+
       await for (final chunk in stream) {
         fullResponse = chunk;
         // تحديث نفس الرسالة في القائمة تدريجياً
@@ -184,13 +189,14 @@ class StudyNotifier extends StateNotifier<StudyState> {
           if (s.id == sessionId) return s.copyWith(response: fullResponse);
           return s;
         }).toList();
-        state = state.copyWith(sessions: updatedSessions, currentStreamingResponse: fullResponse);
+        state = state.copyWith(
+            sessions: updatedSessions, currentStreamingResponse: fullResponse);
       }
 
       // 2. حفظ النتيجة النهائية
       final finalSession = state.sessions.firstWhere((s) => s.id == sessionId);
       await _repository.saveSession(finalSession);
-      
+
       state = state.copyWith(isLoading: false, currentStreamingResponse: '');
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
@@ -198,7 +204,8 @@ class StudyNotifier extends StateNotifier<StudyState> {
   }
 
   Future<void> askAISummary(String query, {String? threadId}) async {
-    final activeThreadId = threadId ?? state.currentThreadId ?? const Uuid().v4();
+    final activeThreadId =
+        threadId ?? state.currentThreadId ?? const Uuid().v4();
     final sessionId = const Uuid().v4();
 
     final newSession = StudySession(
@@ -219,19 +226,20 @@ class StudyNotifier extends StateNotifier<StudyState> {
     try {
       String fullResponse = '';
       final stream = _repository.getShortSummaryStream(query);
-      
+
       await for (final chunk in stream) {
         fullResponse = chunk;
         final updatedSessions = state.sessions.map((s) {
           if (s.id == sessionId) return s.copyWith(response: fullResponse);
           return s;
         }).toList();
-        state = state.copyWith(sessions: updatedSessions, currentStreamingResponse: fullResponse);
+        state = state.copyWith(
+            sessions: updatedSessions, currentStreamingResponse: fullResponse);
       }
 
       final finalSession = state.sessions.firstWhere((s) => s.id == sessionId);
       await _repository.saveSession(finalSession);
-      
+
       state = state.copyWith(isLoading: false, currentStreamingResponse: '');
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
@@ -241,7 +249,7 @@ class StudyNotifier extends StateNotifier<StudyState> {
   Future<void> moveToTrash(String sessionId) async {
     final session = state.sessions.firstWhere((s) => s.id == sessionId);
     final threadId = session.threadId ?? session.id;
-    
+
     // تحديث الواجهة فوراً
     final updatedSessions = state.sessions.map((s) {
       if ((s.threadId ?? s.id) == threadId) return s.copyWith(isDeleted: true);
@@ -250,7 +258,8 @@ class StudyNotifier extends StateNotifier<StudyState> {
     state = state.copyWith(sessions: updatedSessions);
 
     // حفظ في Firebase في الخلفية
-    final threadSessions = state.sessions.where((s) => (s.threadId ?? s.id) == threadId).toList();
+    final threadSessions =
+        state.sessions.where((s) => (s.threadId ?? s.id) == threadId).toList();
     for (var s in threadSessions) {
       await _repository.saveSession(s);
     }
@@ -264,19 +273,20 @@ class StudyNotifier extends StateNotifier<StudyState> {
     }).toList();
     state = state.copyWith(sessions: updatedSessions);
 
-    final threadSessions = state.sessions.where((s) => (s.threadId ?? s.id) == threadId).toList();
+    final threadSessions =
+        state.sessions.where((s) => (s.threadId ?? s.id) == threadId).toList();
     for (var session in threadSessions) {
       await _repository.saveSession(session);
     }
   }
 
   Future<void> deleteThreadPermanently(String threadId) async {
-    final threadSessions = state.sessions.where((s) => (s.threadId ?? s.id) == threadId).toList();
-    
+    final threadSessions =
+        state.sessions.where((s) => (s.threadId ?? s.id) == threadId).toList();
+
     // تحديث الواجهة فوراً
-    final updatedSessions = state.sessions
-        .where((s) => (s.threadId ?? s.id) != threadId)
-        .toList();
+    final updatedSessions =
+        state.sessions.where((s) => (s.threadId ?? s.id) != threadId).toList();
     state = state.copyWith(sessions: updatedSessions);
 
     for (var session in threadSessions) {
@@ -302,7 +312,8 @@ class StudyNotifier extends StateNotifier<StudyState> {
     final session = state.sessions[sessionIndex];
     state = state.copyWith(isLoading: true);
     try {
-      final translatedResponse = await _repository.translateResponse(session.response, targetLanguage);
+      final translatedResponse =
+          await _repository.translateResponse(session.response, targetLanguage);
       final updatedSession = session.copyWith(response: translatedResponse);
       await _repository.saveSession(updatedSession);
       await loadSessions();

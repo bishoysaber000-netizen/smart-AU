@@ -178,7 +178,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: 80,
               height: 80,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.error),
             ),
           ),
           const SizedBox(height: 16),

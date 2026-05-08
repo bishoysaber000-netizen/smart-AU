@@ -15,6 +15,8 @@ class ChatBubble extends ConsumerWidget {
   final String query;
   final String response;
   final DateTime timestamp;
+  final bool isStreaming;
+  final bool isLast;
 
   const ChatBubble({
     super.key,
@@ -22,6 +24,8 @@ class ChatBubble extends ConsumerWidget {
     required this.query,
     required this.response,
     required this.timestamp,
+    this.isStreaming = false,
+    this.isLast = false,
   });
 
   @override
@@ -29,239 +33,278 @@ class ChatBubble extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // User Query
-        Align(
-          alignment: Alignment.centerRight,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(40, 8, 16, 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  colorScheme.primary,
-                  colorScheme.primary.withAlpha(200),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-                bottomLeft: Radius.circular(20),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.primary.withAlpha(50),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Text(
-              query,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 400),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - value)),
+            child: child,
           ),
-        ),
-        
-        // AI Response
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 8, 40, 8),
-            padding: const EdgeInsets.all(2), // For gradient border effect
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  colorScheme.primary.withAlpha(100),
-                  colorScheme.secondary.withAlpha(100),
-                ],
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // User Query
+          Align(
+            alignment: Alignment.centerRight,
             child: Container(
-              padding: const EdgeInsets.all(14),
+              margin: const EdgeInsets.fromLTRB(40, 8, 16, 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
-                  bottomRight: Radius.circular(18),
+                gradient: LinearGradient(
+                  colors: [
+                    colorScheme.primary,
+                    colorScheme.primary.withAlpha(200),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary.withAlpha(30),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.auto_awesome, size: 16, color: colorScheme.primary),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'AI Assistant',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 24, thickness: 0.5),
-                  if (response.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            'Assistant is thinking...',
-                            style: TextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    MarkdownBody(
-                      data: response,
-                      selectable: true,
-                      builders: {
-                        'code': CodeElementBuilder(isDark: isDark),
-                      },
-                      styleSheet: MarkdownStyleSheet(
-                        p: TextStyle(
-                          color: colorScheme.onSurface,
-                          height: 1.6,
-                          fontSize: 15,
-                        ),
-                        h1: TextStyle(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                        h2: TextStyle(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                        h3: TextStyle(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        listBullet: TextStyle(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        code: TextStyle(
-                          backgroundColor: colorScheme.primary.withAlpha(20),
-                          color: colorScheme.primary,
-                          fontFamily: 'monospace',
-                          fontSize: 13,
-                        ),
-                        codeblockDecoration: BoxDecoration(
-                          color: isDark ? Colors.black26 : Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: colorScheme.primary.withAlpha(30)),
-                        ),
-                        blockquote: TextStyle(
-                          color: colorScheme.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        blockquoteDecoration: BoxDecoration(
-                          border: Border(left: BorderSide(color: colorScheme.primary, width: 4)),
-                          color: colorScheme.primary.withAlpha(10),
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        DateFormat('MMM d, h:mm a').format(timestamp),
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: colorScheme.onSurfaceVariant.withAlpha(150),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          _ActionButton(
-                            icon: Icons.translate,
-                            onTap: () => _showTranslateDialog(context, ref),
-                          ),
-                          _ActionButton(
-                            icon: Icons.copy,
-                            onTap: () {
-                              Clipboard.setData(ClipboardData(text: response));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Copied to clipboard'),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionButton(
-                            icon: Icons.share,
-                            onTap: () => Share.share(response),
-                          ),
-                        ],
-                      ),
-                    ],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.primary.withAlpha(50),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
+              child: Text(
+                query,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ),
-        ),
-      ],
+
+          // AI Response
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 8, 40, 8),
+              padding: const EdgeInsets.all(2), // For gradient border effect
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    colorScheme.primary.withAlpha(100),
+                    colorScheme.secondary.withAlpha(100),
+                  ],
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(18),
+                    topRight: Radius.circular(18),
+                    bottomRight: Radius.circular(18),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withAlpha(30),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.auto_awesome,
+                              size: 16, color: colorScheme.primary),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'AI Assistant',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 24, thickness: 0.5),
+                    if (response.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Text(
+                              'Assistant is thinking...',
+                              style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      MarkdownBody(
+                        data: response + (isStreaming ? ' █' : ''),
+                        selectable: true,
+                        builders: {
+                          'code': CodeElementBuilder(isDark: isDark),
+                        },
+                        styleSheet: MarkdownStyleSheet(
+                          p: TextStyle(
+                            color: colorScheme.onSurface,
+                            height: 1.6,
+                            fontSize: 16,
+                            letterSpacing: 0.2,
+                          ),
+                          h1: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            height: 1.4,
+                          ),
+                          h2: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            height: 1.4,
+                          ),
+                          h3: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            height: 1.4,
+                          ),
+                          listBullet: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          code: TextStyle(
+                            backgroundColor: colorScheme.primary.withAlpha(20),
+                            color: colorScheme.primary,
+                            fontFamily: 'monospace',
+                            fontSize: 14,
+                          ),
+                          codeblockDecoration: BoxDecoration(
+                            color: isDark ? Colors.black38 : Colors.grey[50],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: colorScheme.primary.withAlpha(40)),
+                          ),
+                          blockquote: TextStyle(
+                            color: colorScheme.onSurfaceVariant,
+                            fontStyle: FontStyle.italic,
+                            fontSize: 15,
+                          ),
+                          blockquoteDecoration: BoxDecoration(
+                            border: Border(
+                                left: BorderSide(
+                                    color: colorScheme.primary, width: 4)),
+                            color: colorScheme.primary.withAlpha(15),
+                            borderRadius: const BorderRadius.horizontal(
+                                right: Radius.circular(8)),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          DateFormat('MMM d, h:mm a').format(timestamp),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: colorScheme.onSurfaceVariant.withAlpha(150),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            _ActionButton(
+                              icon: Icons.translate,
+                              onTap: () => _showTranslateDialog(context, ref),
+                            ),
+                            _ActionButton(
+                              icon: Icons.copy,
+                              onTap: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: response));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Copied to clipboard'),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                  ),
+                                );
+                              },
+                            ),
+                            _ActionButton(
+                              icon: Icons.share,
+                              onTap: () => Share.share(response),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+
   void _showTranslateDialog(BuildContext context, WidgetRef ref) {
-    final languages = ['Arabic', 'Spanish', 'French', 'German', 'Chinese', 'Japanese'];
-    
+    final languages = [
+      'Arabic',
+      'Spanish',
+      'French',
+      'German',
+      'Chinese',
+      'Japanese'
+    ];
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Translate to...'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: languages.map((lang) => ListTile(
-            title: Text(lang),
-            onTap: () {
-              ref.read(studyProvider.notifier).translateSession(id, lang);
-              Navigator.pop(context);
-            },
-          )).toList(),
+          children: languages
+              .map((lang) => ListTile(
+                    title: Text(lang),
+                    onTap: () {
+                      ref
+                          .read(studyProvider.notifier)
+                          .translateSession(id, lang);
+                      Navigator.pop(context);
+                    },
+                  ))
+              .toList(),
         ),
       ),
     );

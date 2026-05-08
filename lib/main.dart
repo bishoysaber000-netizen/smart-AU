@@ -13,7 +13,7 @@ import 'core/localization/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     // إعدادات الـ Web من Firebase Console
     // يمكنك الحصول عليها من Settings -> Project Settings -> Your Apps
@@ -28,7 +28,7 @@ void main() async {
         measurementId: "G-45QH7QGCW1",
       ),
     );
-    
+
     /* 
     if (FirebaseAuth.instance.currentUser == null) {
       await FirebaseAuth.instance.signInAnonymously();
@@ -38,7 +38,7 @@ void main() async {
     debugPrint('Firebase initialization skipped or failed: $e');
     // سنستمر في العمل باستخدام Hive فقط إذا فشل Firebase
   }
-  
+
   await Hive.initFlutter();
   Hive.registerAdapter(StudySessionAdapter());
   await Hive.openBox<StudySession>(AppConstants.hiveBoxName);
@@ -78,7 +78,8 @@ class MyApp extends ConsumerWidget {
       ],
       home: authState.when(
         data: (user) => user != null ? const HomeScreen() : const LoginScreen(),
-        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+        loading: () =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
         error: (e, s) => Scaffold(body: Center(child: Text(e.toString()))),
       ),
     );

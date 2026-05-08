@@ -10,7 +10,8 @@ class StudyLocalDataSource {
 
   Future<List<StudySession>> getSessions() async {
     final box = Hive.box<StudySession>(AppConstants.hiveBoxName);
-    return box.values.toList()..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return box.values.toList()
+      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
   }
 
   Future<void> deleteSession(String id) async {

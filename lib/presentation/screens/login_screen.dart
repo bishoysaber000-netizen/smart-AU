@@ -15,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
-  
+
   bool _isPhoneLogin = false;
   bool _isSignUp = false;
   String? _verificationId;
@@ -38,7 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -67,12 +68,14 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         // Create user
-        final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        final credential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email,
           password: password,
         );
         // Update display name
-        await credential.user?.updateDisplayName(_usernameController.text.trim());
+        await credential.user
+            ?.updateDisplayName(_usernameController.text.trim());
       } else {
         // Login
         await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -82,7 +85,8 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -94,7 +98,8 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       verificationFailed: (FirebaseAuthException e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message ?? 'Error')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message ?? 'Error')));
       },
       codeSent: (String verificationId, int? resendToken) {
         setState(() => _verificationId = verificationId);
@@ -113,7 +118,8 @@ class _LoginScreenState extends State<LoginScreen> {
       await FirebaseAuth.instance.signInWithCredential(credential);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -151,45 +157,54 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 120,
                       height: 120,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.error),
                     ),
                   ),
                   const SizedBox(height: 24),
                   Text(
                     AppLocalizations.of(context)!.translate('appTitle'),
-                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 1.2),
+                    style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.2),
                   ),
                   Text(
                     'Your AI Learning Companion',
-                    style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+                    style: TextStyle(
+                        fontSize: 14, color: colorScheme.onSurfaceVariant),
                   ),
                   const SizedBox(height: 48),
-                  
+
                   // Login Form Card
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: colorScheme.surface.withAlpha(200),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: colorScheme.primary.withAlpha(50)),
+                      border:
+                          Border.all(color: colorScheme.primary.withAlpha(50)),
                     ),
                     child: Column(
                       children: [
                         if (!_isPhoneLogin) ...[
-                          if (_isSignUp) 
+                          if (_isSignUp)
                             _buildTextField(
                               controller: _usernameController,
-                              label: AppLocalizations.of(context)!.translate('username'),
+                              label: AppLocalizations.of(context)!
+                                  .translate('username'),
                               icon: Icons.person_outline,
                             ),
                           _buildTextField(
                             controller: _emailController,
-                            label: AppLocalizations.of(context)!.translate('email'),
+                            label: AppLocalizations.of(context)!
+                                .translate('email'),
                             icon: Icons.email_outlined,
                           ),
                           _buildTextField(
                             controller: _passwordController,
-                            label: AppLocalizations.of(context)!.translate('password'),
+                            label: AppLocalizations.of(context)!
+                                .translate('password'),
                             icon: Icons.lock_outline,
                             isPassword: true,
                           ),
@@ -198,7 +213,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               padding: const EdgeInsets.only(bottom: 16),
                               child: Text(
                                 '• At least 8 characters\n• At least one uppercase letter (A-Z)\n• At least one number (0-9)',
-                                style: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(150), fontSize: 11),
+                                style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant
+                                        .withAlpha(150),
+                                    fontSize: 11),
                               ),
                             ),
                           if (!_isSignUp)
@@ -206,7 +224,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               alignment: Alignment.centerRight,
                               child: TextButton(
                                 onPressed: _handleForgotPassword,
-                                child: Text('Forgot Password?', style: TextStyle(color: colorScheme.primary, fontSize: 13)),
+                                child: Text('Forgot Password?',
+                                    style: TextStyle(
+                                        color: colorScheme.primary,
+                                        fontSize: 13)),
                               ),
                             ),
                           const SizedBox(height: 16),
@@ -215,13 +236,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               minimumSize: const Size(double.infinity, 56),
                               backgroundColor: colorScheme.primary,
                               foregroundColor: colorScheme.onPrimary,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
                               elevation: 4,
                             ),
-                            onPressed: _handleEmailAuth, 
+                            onPressed: _handleEmailAuth,
                             child: Text(
-                              _isSignUp ? AppLocalizations.of(context)!.translate('signUp') : AppLocalizations.of(context)!.translate('signIn'),
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              _isSignUp
+                                  ? AppLocalizations.of(context)!
+                                      .translate('signUp')
+                                  : AppLocalizations.of(context)!
+                                      .translate('signIn'),
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ] else ...[
@@ -235,9 +262,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 minimumSize: const Size(double.infinity, 56),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
                               ),
-                              onPressed: _loginWithPhone, 
+                              onPressed: _loginWithPhone,
                               child: const Text('Send Verification Code'),
                             ),
                           ] else ...[
@@ -250,9 +278,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 minimumSize: const Size(double.infinity, 56),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
                               ),
-                              onPressed: _verifyOtp, 
+                              onPressed: _verifyOtp,
                               child: const Text('Verify & Sign In'),
                             ),
                           ],
@@ -261,31 +290,40 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Toggle Login Mode
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       TextButton(
                         onPressed: () => setState(() => _isSignUp = !_isSignUp),
-                        child: Text(_isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'),
+                        child: Text(_isSignUp
+                            ? 'Already have an account? Sign In'
+                            : 'Need an account? Sign Up'),
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Expanded(child: Divider(color: colorScheme.primary.withAlpha(50))),
+                      Expanded(
+                          child: Divider(
+                              color: colorScheme.primary.withAlpha(50))),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('OR', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                        child: Text('OR',
+                            style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                                fontSize: 12)),
                       ),
-                      Expanded(child: Divider(color: colorScheme.primary.withAlpha(50))),
+                      Expanded(
+                          child: Divider(
+                              color: colorScheme.primary.withAlpha(50))),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Other Login Options
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -297,14 +335,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           _isSignUp = false;
                           _verificationId = null;
                         }),
-                      ),
-                      const SizedBox(width: 16),
-                      _SocialButton(
-                        icon: Icons.person_search_outlined,
-                        label: 'Anonymous',
-                        onTap: () async {
-                          await FirebaseAuth.instance.signInAnonymously();
-                        },
                       ),
                     ],
                   ),
@@ -331,15 +361,16 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, size: 20),
-          suffixIcon: isPassword 
-            ? IconButton(
-                icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  size: 20,
-                ),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-              )
-            : null,
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    size: 20,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                )
+              : null,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -355,10 +386,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
 class _SocialButton extends StatelessWidget {
   final IconData icon;
-  final String? label;
   final VoidCallback onTap;
 
-  const _SocialButton({required this.icon, this.label, required this.onTap});
+  const _SocialButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -375,10 +405,6 @@ class _SocialButton extends StatelessWidget {
         child: Row(
           children: [
             Icon(icon, size: 20, color: colorScheme.primary),
-            if (label != null) ...[
-              const SizedBox(width: 12),
-              Text(label!, style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
-            ],
           ],
         ),
       ),

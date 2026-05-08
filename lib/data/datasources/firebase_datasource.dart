@@ -45,7 +45,8 @@ class FirebaseDataSource {
       'timestamp': Timestamp.fromDate(session.timestamp),
       'threadId': session.threadId,
       'isDeleted': session.isDeleted,
-      'updatedAt': FieldValue.serverTimestamp(), // Use server timestamp for reliable merging
+      'updatedAt': FieldValue
+          .serverTimestamp(), // Use server timestamp for reliable merging
     });
   }
 
@@ -66,15 +67,15 @@ class FirebaseDataSource {
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) {
               final data = doc.data();
-        return StudySession(
-          id: doc.id,
-          query: data['query'] ?? '',
-          response: data['response'] ?? '',
-          timestamp: (data['timestamp'] as Timestamp).toDate(),
-          updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
-          threadId: data['threadId'],
-          isDeleted: data['isDeleted'] ?? false,
-        );
+              return StudySession(
+                id: doc.id,
+                query: data['query'] ?? '',
+                response: data['response'] ?? '',
+                timestamp: (data['timestamp'] as Timestamp).toDate(),
+                updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+                threadId: data['threadId'],
+                isDeleted: data['isDeleted'] ?? false,
+              );
             }).toList());
   }
 

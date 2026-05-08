@@ -10,8 +10,8 @@ class ChatScreen extends ConsumerStatefulWidget {
   final bool shouldSummarize;
 
   const ChatScreen({
-    super.key, 
-    this.threadId, 
+    super.key,
+    this.threadId,
     this.initialQuery,
     this.shouldSummarize = false,
   });
@@ -23,7 +23,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   late final String _lockedThreadId;
-  
+
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -38,14 +38,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (widget.initialQuery != null) {
         if (widget.shouldSummarize) {
           ref.read(studyProvider.notifier).askAISummary(
-            widget.initialQuery!,
-            threadId: _lockedThreadId,
-          );
+                widget.initialQuery!,
+                threadId: _lockedThreadId,
+              );
         } else {
           ref.read(studyProvider.notifier).askAI(
-            widget.initialQuery!,
-            threadId: _lockedThreadId,
-          );
+                widget.initialQuery!,
+                threadId: _lockedThreadId,
+              );
         }
       }
     });
@@ -75,12 +75,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     // نستخدم فلتر ذكي يدعم الرسائل القديمة والجديدة
-    final threadSessions = state.sessions
-        .where((s) {
-          final sThreadId = s.threadId ?? s.id;
-          return sThreadId == _lockedThreadId && !s.isDeleted;
-        })
-        .toList()
+    final threadSessions = state.sessions.where((s) {
+      final sThreadId = s.threadId ?? s.id;
+      return sThreadId == _lockedThreadId && !s.isDeleted;
+    }).toList()
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -100,7 +98,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             if (state.isLoading)
               Text(
                 'AI is typing...',
-                style: TextStyle(fontSize: 12, color: colorScheme.onPrimary.withAlpha(200)),
+                style: TextStyle(
+                    fontSize: 12, color: colorScheme.onPrimary.withAlpha(200)),
               ),
           ],
         ),
@@ -114,11 +113,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: Container(
         decoration: BoxDecoration(
           color: colorScheme.surface,
-          image: isDark ? null : const DecorationImage(
-            image: NetworkImage('https://www.transparenttextures.com/patterns/cubes.png'),
-            opacity: 0.05,
-            repeat: ImageRepeat.repeat,
-          ),
+          image: isDark
+              ? null
+              : const DecorationImage(
+                  image: NetworkImage(
+                      'https://www.transparenttextures.com/patterns/cubes.png'),
+                  opacity: 0.05,
+                  repeat: ImageRepeat.repeat,
+                ),
         ),
         child: Column(
           children: [
@@ -127,8 +129,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ? _buildEmptyState(context)
                   : ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                      itemCount: threadSessions.length + (state.error != null ? 1 : 0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 16),
+                      itemCount:
+                          threadSessions.length + (state.error != null ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index < threadSessions.length) {
                           final session = threadSessions[index];
@@ -137,6 +141,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             query: session.query,
                             response: session.response,
                             timestamp: session.timestamp,
+                            isStreaming: state.isLoading &&
+                                index == threadSessions.length - 1,
+                            isLast: index == threadSessions.length - 1,
                           );
                         }
 
@@ -167,7 +174,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               color: colorScheme.primary.withAlpha(20),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.school_outlined, size: 64, color: colorScheme.primary),
+            child: Icon(Icons.school_outlined,
+                size: 64, color: colorScheme.primary),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -237,7 +245,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: isDark ? colorScheme.surfaceContainerHighest : Colors.grey[100],
+                color: isDark
+                    ? colorScheme.surfaceContainerHighest
+                    : Colors.grey[100],
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(color: colorScheme.primary.withAlpha(50)),
               ),
@@ -258,8 +268,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   IconButton(
                     icon: Icon(
-                      Icons.article_outlined, 
-                      color: _controller.text.isNotEmpty ? colorScheme.primary : colorScheme.onSurfaceVariant.withAlpha(100),
+                      Icons.article_outlined,
+                      color: _controller.text.isNotEmpty
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant.withAlpha(100),
                     ),
                     tooltip: 'Summarize',
                     onPressed: _handleSummarize,
@@ -272,24 +284,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _controller,
             builder: (context, value, child) {
-              final isNotEmpty = value.text.trim().isNotEmpty && !state.isLoading;
+              final isNotEmpty =
+                  value.text.trim().isNotEmpty && !state.isLoading;
               return GestureDetector(
                 onTap: isNotEmpty ? _handleSend : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isNotEmpty ? colorScheme.primary : colorScheme.primary.withAlpha(100),
+                    color: isNotEmpty
+                        ? colorScheme.primary
+                        : colorScheme.primary.withAlpha(100),
                     shape: BoxShape.circle,
-                    boxShadow: isNotEmpty ? [
-                      BoxShadow(
-                        color: colorScheme.primary.withAlpha(100),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ] : null,
+                    boxShadow: isNotEmpty
+                        ? [
+                            BoxShadow(
+                              color: colorScheme.primary.withAlpha(100),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
                   ),
-                  child: const Icon(Icons.send_rounded, color: Colors.white, size: 24),
+                  child: const Icon(Icons.send_rounded,
+                      color: Colors.white, size: 24),
                 ),
               );
             },
@@ -303,9 +321,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final text = _controller.text.trim();
     if (text.isNotEmpty) {
       ref.read(studyProvider.notifier).askAI(
-        text,
-        threadId: _lockedThreadId,
-      );
+            text,
+            threadId: _lockedThreadId,
+          );
       _controller.clear();
       _scrollToBottom();
     }
@@ -313,7 +331,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _handleSummarize() {
     if (_controller.text.trim().isNotEmpty) {
-      ref.read(studyProvider.notifier).askAISummary(_controller.text, threadId: _lockedThreadId);
+      ref
+          .read(studyProvider.notifier)
+          .askAISummary(_controller.text, threadId: _lockedThreadId);
       _controller.clear();
     }
   }

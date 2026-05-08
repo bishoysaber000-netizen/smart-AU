@@ -6,13 +6,13 @@ part 'study_session.g.dart';
 class StudySession extends HiveObject {
   @HiveField(0)
   final String id;
-  
+
   @HiveField(1)
   final String query;
-  
+
   @HiveField(2)
   final String response;
-  
+
   @HiveField(3)
   final DateTime timestamp;
 
