@@ -8,7 +8,7 @@ class AIRemoteDataSource {
 
   AIRemoteDataSource()
       : _model = GenerativeModel(
-          model: 'gemini-2.5-flash',
+          model: 'gemini-3-flash-preview',
           apiKey: AppConstants.geminiApiKey,
         );
 
@@ -20,6 +20,7 @@ class AIRemoteDataSource {
   }) async* {
     try {
       final chatHistory = history
+          .where((s) => s.query.trim().isNotEmpty && s.response.trim().isNotEmpty)
           .map((s) => [
                 Content.text(s.query),
                 Content.model([TextPart(s.response)]),
